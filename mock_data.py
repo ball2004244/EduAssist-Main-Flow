@@ -1,0 +1,1 @@
+MOCK_QUESTIONS = ["What is the meaning of life in terms of existentialism?", "What is the point of nietzsche's heaviest weight in the gay science", "What argument does the Watchmaker argument makes about existence of God", "Explain social contract theory in terms of Hobbes", "What is the difference between a priori and a posteriori knowledge?"]
