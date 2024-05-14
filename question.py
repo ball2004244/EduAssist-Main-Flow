@@ -1,8 +1,9 @@
 from llm import generate_questions
 from store import RedisDB
+from config import REDIS_DB, REDIS_HOST, REDIS_PORT
 from rich.console import Console
+from mock_data import MOCK_TOPICS
 import time
-
 console = Console()
 
 # This code will generate questions based on the initial question and topic
@@ -12,15 +13,10 @@ console = Console()
 
 def main() -> None:
     question_limit = 100  # max size of the queue
-    redis_db = RedisDB()
-    # init_question = input("Enter the initial question for the AI system: ")
-    # topic = input("Enter the topic for the AI system: ")
-    init_question = "What is the meaning of life in terms of existentialism?"
-    topic = "Philosophy"
+    redis_db = RedisDB(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
+    topic = MOCK_TOPICS[0]
 
     redis_db.delete_data("questions")  # clear the queue
-    # push the initial question
-    redis_db.push_queue("questions", init_question)
     while True:
         if redis_db.get_queue_length("questions") >= question_limit:
             console.print(f"[red]Queue limit reached. Retry in 30s")
@@ -29,7 +25,6 @@ def main() -> None:
 
         console.print(f"[green]Generating questions...")
         console.print(f"[bold]Topic: {topic}")
-        console.print(f"[bold]Initial Question: {init_question}")
 
         questions = redis_db.get_all_queue("questions")
         new_questions = generate_questions(topic, questions)

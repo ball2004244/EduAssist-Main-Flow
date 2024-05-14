@@ -13,11 +13,11 @@ def generate_questions(topic: str, questions: List[str], question_count: int = 5
     For each question given below, generate {question_count} more different questions based on this requirement. 
     These questions should be related to my current one in terms of topic, context, and field 
     but expressed differently. Your generated questions should be insightful, relevant, 
-    and specific to the original one." 
+    and specific." 
     ANSWER NOTHING BUT THE {question_count} INSIGHT QUESTIONS. 
     Separate each question with only '\n'. 
     Here is your topic: {topic}
-    Here are the questions I have so far:
+    Here are the questions I have so far, use these as the context for the new questions:
     {questions}
     '''
     quest_gen_prompt = PromptTemplate.from_template(prompt)
@@ -49,9 +49,8 @@ def generate_answer(topic: str, question: str, verbose: bool = False) -> str:
 
 if __name__ == "__main__":
     # questions = ["What is the meaning of life in terms of existentialism?", "What is the point of nietzsche's heaviest weight in the gay science", "What argument does the Watchmaker argument makes about existence of God", "Explain social contract theory in terms of Hobbes", "What is the difference between a priori and a posteriori knowledge?"]
-    topic = "Philosophy"
-    init_question = "What is the meaning of life in terms of existentialism?"
-    output = generate_questions(topic, init_question)
+    output = generate_questions("Philosophy", [], 5)
+    # output = generate_questions(topic)
     # print(output)
 
     # print("=====================================")
