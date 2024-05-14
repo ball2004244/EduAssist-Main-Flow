@@ -3,6 +3,7 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from config import GEMINI_API_KEY
 from typing import List
+import time
 
 
 def generate_questions(topic: str, questions: List[str], question_count: int = 5, verbose: bool = False) -> List[str]:
@@ -10,23 +11,25 @@ def generate_questions(topic: str, questions: List[str], question_count: int = 5
         model="gemini-pro", google_api_key=GEMINI_API_KEY)
 
     prompt = '''
-    For each question given below, generate {question_count} more different questions based on this requirement. 
-    These questions should be related to my current one in terms of topic, context, and field 
-    but expressed differently. Your generated questions should be insightful, relevant, 
-    and specific." 
+    You are an expert in field {topic}. Your task is to come up with {question_count} indepth questions follow-up my current questions. 
+    These questions should be in same field but not too related to my current one in terms of topic, context, and field. 
+    Your generated questions should be insightful, relevant, and specific to the original one.
     ANSWER NOTHING BUT THE {question_count} INSIGHT QUESTIONS. 
-    Separate each question with only '\n'. 
+    Dont be too shallow, but deeply insightful instead.
+    Separate each question with only '\\n'. 
     Here is your topic: {topic}
-    Here are the questions I have so far, use these as the context for the new questions:
+    Here are the questions I have so far:
     {questions}
     '''
+
     quest_gen_prompt = PromptTemplate.from_template(prompt)
     chain = LLMChain(llm=llm, prompt=quest_gen_prompt, verbose=verbose)
     input_data = {"topic": topic, "questions": questions,
                   "question_count": question_count}
     res = chain.invoke(input=input_data)["text"]
 
-    return res.split("\n")
+    # Return only non-empty questions
+    return list(filter(None, res.split("\n")))
 
 
 def generate_answer(topic: str, question: str, verbose: bool = False) -> str:
@@ -47,12 +50,38 @@ def generate_answer(topic: str, question: str, verbose: bool = False) -> str:
     return res
 
 
-if __name__ == "__main__":
-    # questions = ["What is the meaning of life in terms of existentialism?", "What is the point of nietzsche's heaviest weight in the gay science", "What argument does the Watchmaker argument makes about existence of God", "Explain social contract theory in terms of Hobbes", "What is the difference between a priori and a posteriori knowledge?"]
-    output = generate_questions("Philosophy", [], 5)
-    # output = generate_questions(topic)
-    # print(output)
+def generate_topics(topic: str, sub_topics: int, max_call: int = 3) -> List[str]:
+    if max_call == 0:
+        return []
 
-    # print("=====================================")
-    # answer = generate_answer(topic, init_question)
-    # print(answer)
+    llm = ChatGoogleGenerativeAI(
+        model="gemini-pro", google_api_key=GEMINI_API_KEY)
+
+    prompt = '''
+    You are an expert in this {topic} field. Your task is to give {sub_topics} possible subtopics that is relevant to the {topic}. 
+    Answer only with the subtopics provided and nothing else. Make sure your subtopics are relevant and specific to the {topic} topic and expand it in some way.
+    Separate each subtopic with only '\\n'. 
+    '''
+    topic_gen_prompt = PromptTemplate.from_template(prompt)
+    chain = LLMChain(llm=llm, prompt=topic_gen_prompt, verbose=False)
+    input_data = {"topic": topic, "sub_topics": sub_topics}
+
+    output_topics = chain.invoke(input=input_data)["text"].split("\n")
+    out = output_topics.copy()
+    for topic in output_topics:
+        time.sleep(1)
+        new_topics = generate_topics(topic, sub_topics, max_call - 1)
+        if (len(new_topics) > 0):
+            out.extend(new_topics)
+
+    # remove empty topics
+    return list(filter(None, out))
+
+
+if __name__ == "__main__":
+    topic = "Philosophy"
+    sub_topics = 5
+    questions = ["What is the meaning of life?"]
+    output = generate_questions(topic, questions, question_count=5, verbose=True)
+    print(output)
+

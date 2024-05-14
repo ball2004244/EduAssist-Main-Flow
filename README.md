@@ -25,3 +25,6 @@ LogosDB:
 5. Run `python question.py` to generate questions
 6. At the same time, run `python answer.py` to generate answers
 7. Check out the installed postgresql database for the generated data
+
+## Interesting Finding
+We use Gemini to create both questions and answers for our system. As you know, Google introduced several harmful categories that the model should avoid. However, we found that the model still recognizes its own generated texts as harmful. We are still investigating the reason behind this.
