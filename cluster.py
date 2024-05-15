@@ -1,4 +1,4 @@
-from config import POSTGRES_USER, POSTGRES_PASSWORD
+from config import POSTGRES_USER
 from typing import List
 import subprocess
 
@@ -21,4 +21,7 @@ def install_charts(release_name: str, chart_name: str, topics: List[str]) -> Non
 
 # Usage
 if __name__ == "__main__":
-    install_charts("test-release", "topic-chart", ["maths", "physics", "chemistry"])
+    topics = ["maths", "physics", "chemistry"] # Replace with your topics
+    release_name = "test-release" # Replace with your release name
+    chart_name = "topic-chart" # Replace with your chart name
+    install_charts(release_name, chart_name, topics)
